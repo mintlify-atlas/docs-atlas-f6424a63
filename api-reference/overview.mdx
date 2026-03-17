@@ -1,0 +1,214 @@
+---
+title: 'API reference overview'
+description: 'Base URL, authentication, request conventions, and response formats for the Cafe Acacias E-commerce API.'
+keywords: ['api', 'rest', 'strapi', 'authentication', 'pagination', 'filters']
+---
+
+# API reference overview
+
+The Cafe Acacias E-commerce API is built on [Strapi v5](https://strapi.io), a headless CMS that exposes a REST API for managing store content such as products, categories, and orders.
+
+## Base URL
+
+```
+http://localhost:1337/api
+```
+
+All endpoints are relative to this base URL.
+
+## Authentication
+
+Most read endpoints are publicly accessible for published content. Write operations and access to draft content require a Bearer JWT token.
+
+Include the token in the `Authorization` header on every authenticated request:
+
+```
+Authorization: Bearer <jwt_token>
+```
+
+Obtain a JWT token by calling `POST /api/auth/local` with valid credentials.
+
+## Required headers
+
+| Header | Value |
+| --- | --- |
+| `Content-Type` | `application/json` |
+| `Authorization` | `Bearer <jwt_token>` (authenticated endpoints only) |
+
+## Request conventions
+
+Strapi v5 follows consistent REST conventions across all content types. The sections below cover the query parameters you can use on any list endpoint.
+
+### Filtering
+
+Use bracket notation to filter results by field value:
+
+```
+GET /api/products?filters[title][$eq]=Espresso
+```
+
+Common filter operators:
+
+| Operator | Description |
+| --- | --- |
+| `$eq` | Equal |
+| `$ne` | Not equal |
+| `$lt` | Less than |
+| `$lte` | Less than or equal |
+| `$gt` | Greater than |
+| `$gte` | Greater than or equal |
+| `$contains` | Contains (case-sensitive) |
+| `$containsi` | Contains (case-insensitive) |
+| `$in` | Included in array |
+| `$null` | Is null |
+| `$notNull` | Is not null |
+
+### Pagination
+
+Results are paginated by default with a page size of 25.
+
+| Parameter | Type | Default | Description |
+| --- | --- | --- | --- |
+| `pagination[page]` | number | `1` | Page number (1-indexed) |
+| `pagination[pageSize]` | number | `25` | Number of results per page |
+
+```
+GET /api/products?pagination[page]=2&pagination[pageSize]=10
+```
+
+### Population
+
+Relational fields and media are not included in responses by default. Use `populate` to include them:
+
+```
+# Populate all top-level relations
+GET /api/products?populate=*
+
+# Populate a specific relation
+GET /api/products?populate[category]=true
+
+# Populate nested relations
+GET /api/products?populate[category][populate]=*
+```
+
+### Sorting
+
+Sort results by one or more fields:
+
+```
+# Single field, ascending
+GET /api/products?sort[0]=price:asc
+
+# Multiple fields
+GET /api/products?sort[0]=price:asc&sort[1]=title:desc
+```
+
+## Response format
+
+All successful responses follow this envelope structure:
+
+```json
+{
+  "data": { ... },
+  "meta": { ... }
+}
+```
+
+- **`data`** — The requested resource or array of resources.
+- **`meta`** — Metadata such as pagination info.
+
+### Pagination metadata
+
+List endpoints include pagination details in `meta`:
+
+```json
+{
+  "data": [...],
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "pageSize": 25,
+      "pageCount": 4,
+      "total": 98
+    }
+  }
+}
+```
+
+## Error responses
+
+All errors follow a consistent structure:
+
+```json
+{
+  "data": null,
+  "error": {
+    "status": 400,
+    "name": "ValidationError",
+    "message": "title is a required field",
+    "details": {}
+  }
+}
+```
+
+| Field | Description |
+| --- | --- |
+| `status` | HTTP status code |
+| `name` | Error type name |
+| `message` | Human-readable description |
+| `details` | Additional context (validation errors, etc.) |
+
+## HTTP status codes
+
+| Code | Meaning |
+| --- | --- |
+| `200 OK` | Request succeeded |
+| `201 Created` | Resource created successfully |
+| `400 Bad Request` | Invalid request body or query parameters |
+| `401 Unauthorized` | Missing or invalid JWT token |
+| `403 Forbidden` | Valid token, but insufficient permissions |
+| `404 Not Found` | Resource does not exist |
+| `500 Internal Server Error` | Unexpected server error |
+
+## Rate limiting
+
+<Note>
+  Strapi does not add rate limiting by default. If you need rate limiting, configure it at the infrastructure level (e.g., a reverse proxy such as Nginx or a gateway like Kong) or install a Strapi rate-limiting plugin.
+</Note>
+
+## Quick example
+
+<CodeGroup>
+
+```bash curl
+curl http://localhost:1337/api/products?populate=*
+```
+
+```json Response
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "House Blend Coffee",
+      "price": 12000,
+      "discount": 0,
+      "summary": "Smooth, balanced blend with notes of chocolate and citrus.",
+      "slug": "house-blend-coffee",
+      "weight": 250,
+      "stock": 80,
+      "cover": { ... },
+      "category": { ... }
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "pageSize": 25,
+      "pageCount": 1,
+      "total": 1
+    }
+  }
+}
+```
+
+</CodeGroup>

@@ -1,0 +1,129 @@
+---
+title: 'List addresses'
+description: 'Retrieve all addresses belonging to the authenticated user.'
+sidebarTitle: 'List addresses'
+---
+
+<Note>
+  This endpoint requires authentication. Include a valid JWT in the `Authorization` header.
+</Note>
+
+## Query parameters
+
+<ParamField query="filters[user][id][$eq]" type="number" required>
+  Filter addresses by the authenticated user's ID. Only addresses belonging to this user are returned.
+</ParamField>
+
+## Request headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token. Format: `Bearer <jwt_token>`
+</ParamField>
+
+<ParamField header="Content-Type" type="string" required default="application/json">
+  Must be `application/json`.
+</ParamField>
+
+## Response fields
+
+<ResponseField name="data" type="object[]">
+  Array of address objects.
+  <Expandable title="address object">
+    <ResponseField name="id" type="number">
+      Unique identifier for the address.
+    </ResponseField>
+    <ResponseField name="attributes" type="object">
+      <Expandable title="attributes">
+        <ResponseField name="title" type="string">
+          User-friendly label for the address, e.g. `Home` or `Work`.
+        </ResponseField>
+        <ResponseField name="name" type="string">
+          Recipient's full name.
+        </ResponseField>
+        <ResponseField name="address" type="string">
+          Street address.
+        </ResponseField>
+        <ResponseField name="city" type="string">
+          City.
+        </ResponseField>
+        <ResponseField name="state" type="string">
+          State, province, or department.
+        </ResponseField>
+        <ResponseField name="postalCode" type="string">
+          Postal or ZIP code.
+        </ResponseField>
+        <ResponseField name="phone" type="string">
+          Phone number digits.
+        </ResponseField>
+        <ResponseField name="dialCode" type="string">
+          International dial code, e.g. `+57`. Optional.
+        </ResponseField>
+        <ResponseField name="createdAt" type="string">
+          ISO 8601 timestamp of when the address was created.
+        </ResponseField>
+        <ResponseField name="updatedAt" type="string">
+          ISO 8601 timestamp of the last update.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Pagination metadata.
+  <Expandable title="meta">
+    <ResponseField name="pagination" type="object">
+      <Expandable title="pagination">
+        <ResponseField name="page" type="number">Current page number.</ResponseField>
+        <ResponseField name="pageSize" type="number">Number of results per page.</ResponseField>
+        <ResponseField name="pageCount" type="number">Total number of pages.</ResponseField>
+        <ResponseField name="total" type="number">Total number of results.</ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Examples
+
+<CodeGroup>
+
+```bash cURL
+curl --request GET \
+  --url 'http://localhost:1337/api/addresses?filters[user][id][$eq]=1' \
+  --header 'Authorization: Bearer <jwt_token>' \
+  --header 'Content-Type: application/json'
+```
+
+</CodeGroup>
+
+### Response
+
+```json 200
+{
+  "data": [
+    {
+      "id": 1,
+      "attributes": {
+        "title": "Home",
+        "name": "John Doe",
+        "address": "Calle 123",
+        "city": "Bogotá",
+        "state": "Cundinamarca",
+        "postalCode": "110111",
+        "phone": "3001234567",
+        "dialCode": "+57",
+        "createdAt": "2024-01-15T10:30:00.000Z",
+        "updatedAt": "2024-01-15T10:30:00.000Z"
+      }
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "pageSize": 25,
+      "pageCount": 1,
+      "total": 1
+    }
+  }
+}
+```

@@ -1,0 +1,78 @@
+---
+title: 'Remove from wishlist'
+description: 'Remove a wishlist entry by its entry ID. Returns the deleted wishlist entry.'
+sidebarTitle: 'Remove from wishlist'
+---
+
+<Warning>
+  This action is irreversible. The wishlist entry will be permanently deleted.
+</Warning>
+
+<Note>
+  This endpoint requires authentication. Include a valid JWT in the `Authorization` header.
+</Note>
+
+## Path parameters
+
+<ParamField path="id" type="number" required>
+  The ID of the wishlist **entry** to delete. This is the wishlist record ID, not the product ID.
+</ParamField>
+
+## Request headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token. Format: `Bearer <jwt_token>`
+</ParamField>
+
+<ParamField header="Content-Type" type="string" required default="application/json">
+  Must be `application/json`.
+</ParamField>
+
+<Tip>
+  If you only know the product ID and need the wishlist entry ID, first call [List wishlist items](/api-reference/wishlist/list) with `filters[user][id][$eq]=<userId>&filters[product][id][$eq]=<productId>` to find the matching entry, then use its `id` here.
+</Tip>
+
+## Response fields
+
+<ResponseField name="data" type="object">
+  The deleted wishlist entry.
+  <Expandable title="wishlist entry">
+    <ResponseField name="id" type="number">
+      Unique identifier of the deleted wishlist entry.
+    </ResponseField>
+    <ResponseField name="attributes" type="object">
+      <Expandable title="attributes">
+        <ResponseField name="createdAt" type="string">ISO 8601 creation timestamp.</ResponseField>
+        <ResponseField name="updatedAt" type="string">ISO 8601 last-updated timestamp.</ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Examples
+
+<CodeGroup>
+
+```bash cURL
+curl --request DELETE \
+  --url 'http://localhost:1337/api/wishlists/3' \
+  --header 'Authorization: Bearer <jwt_token>' \
+  --header 'Content-Type: application/json'
+```
+
+</CodeGroup>
+
+### Response
+
+```json 200
+{
+  "data": {
+    "id": 3,
+    "attributes": {
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T10:30:00.000Z"
+    }
+  },
+  "meta": {}
+}
+```

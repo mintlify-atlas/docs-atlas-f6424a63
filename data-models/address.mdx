@@ -1,0 +1,98 @@
+---
+title: 'Address'
+description: 'The Address model stores a customer shipping address. Users can save multiple named addresses for reuse at checkout.'
+keywords: ['address', 'data model', 'schema', 'collection type', 'shipping']
+---
+
+The `Address` collection type stores named shipping addresses for customers. A user can have multiple saved addresses, each identified by a friendly `title`. Addresses do **not** use the draft/publish workflow — every saved address is immediately available.
+
+At checkout, the selected address is copied as a JSON snapshot into the [Order](/data-models/order)'s `addressShiping` field, preserving the delivery details at the time of purchase.
+
+## Fields
+
+<ResponseField name="id" type="integer" required>
+  Auto-generated unique identifier assigned by Strapi.
+</ResponseField>
+
+<ResponseField name="title" type="string" required>
+  A user-defined label for the address, used to identify it in the checkout UI. Examples: `"Home"`, `"Work"`, `"Mom's place"`.
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  Full name of the recipient at this address. This may differ from the account holder's name (e.g., when shipping a gift).
+</ResponseField>
+
+<ResponseField name="address" type="string" required>
+  Street address, including house or apartment number (e.g., `"Calle 123 #45-67, Apt 8B"`).
+</ResponseField>
+
+<ResponseField name="city" type="string" required>
+  City or municipality of the delivery address.
+</ResponseField>
+
+<ResponseField name="state" type="string" required>
+  State, province, or department of the delivery address (e.g., `"Cundinamarca"`).
+</ResponseField>
+
+<ResponseField name="postalCode" type="string" required>
+  Postal or ZIP code for the delivery address. Stored as a string to preserve leading zeros and support international formats.
+</ResponseField>
+
+<ResponseField name="phone" type="string" required>
+  Contact phone number for delivery. Stored as a string to support various formats. Use in combination with `dialCode` for international numbers.
+</ResponseField>
+
+<ResponseField name="dialCode" type="string">
+  International telephone dial code prefix for `phone`, including the `+` sign (e.g., `"+57"` for Colombia, `"+1"` for the United States). When present, the full phone number is `dialCode + phone`.
+</ResponseField>
+
+<ResponseField name="user" type="relation (oneToOne → User)">
+  Reference to the `users-permissions` plugin user who owns this address. Used to scope address lists to the authenticated customer.
+
+  <Expandable title="User relation fields">
+    <ResponseField name="user.id" type="integer">
+      The user's unique identifier.
+    </ResponseField>
+    <ResponseField name="user.email" type="string">
+      The user's email address.
+    </ResponseField>
+    <ResponseField name="user.username" type="string">
+      The user's username.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Fetching a user's addresses
+
+To retrieve all saved addresses for the authenticated user, filter by the user's ID:
+
+```http
+GET /api/addresses?filters[user][id][$eq]=7
+```
+
+<Note>
+  Address endpoints should be protected so that users can only read and modify their own addresses. Configure role permissions in the Strapi admin panel under **Settings → Roles**.
+</Note>
+
+## Example response
+
+```json
+{
+  "id": 12,
+  "title": "Home",
+  "name": "Maria Garcia",
+  "address": "Calle 123 #45-67, Apt 8B",
+  "city": "Bogotá",
+  "state": "Cundinamarca",
+  "postalCode": "110111",
+  "phone": "3001234567",
+  "dialCode": "+57",
+  "user": {
+    "id": 7,
+    "email": "maria@example.com",
+    "username": "maria_garcia"
+  },
+  "createdAt": "2025-02-10T09:15:00.000Z",
+  "updatedAt": "2025-02-10T09:15:00.000Z"
+}
+```

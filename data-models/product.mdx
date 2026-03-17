@@ -1,0 +1,142 @@
+---
+title: 'Product'
+description: 'The Product model represents a coffee product in the Cafe Acacias store. Products support draft/publish workflow and include pricing, media, and inventory fields.'
+keywords: ['product', 'data model', 'schema', 'collection type']
+---
+
+The `Product` collection type is the core catalog entity. Each product has pricing, media assets, inventory tracking, and an optional discount. Products go through a **draft/publish workflow** — only published products are visible to storefront users.
+
+<Note>
+  The `slug` field is auto-generated from `title` using Strapi's UID field type. You can override it manually, but it must remain unique across all products.
+</Note>
+
+## Fields
+
+<ResponseField name="id" type="integer" required>
+  Auto-generated unique identifier assigned by Strapi.
+</ResponseField>
+
+<ResponseField name="title" type="string" required>
+  The display name of the product (e.g., `"Espresso Blend 250g"`). Used as the source for `slug` auto-generation.
+</ResponseField>
+
+<ResponseField name="slug" type="string (UID)" required>
+  URL-safe unique identifier auto-generated from `title`. Used in storefront routes (e.g., `/products/espresso-blend-250g`). Must be unique across all products.
+</ResponseField>
+
+<ResponseField name="price" type="integer" required>
+  Product price in the store's base currency unit (e.g., cents or the smallest currency denomination). Always a whole number.
+</ResponseField>
+
+<ResponseField name="discount" type="integer">
+  Discount percentage to apply to `price`, expressed as a whole number between `0` and `100`. For example, `20` means 20% off.
+
+  **Effective price formula:**
+  ```
+  effectivePrice = price * (1 - discount / 100)
+  ```
+
+  When `null` or `0`, no discount is applied.
+</ResponseField>
+
+<ResponseField name="summary" type="text" required>
+  Short description of the product shown in listings and product detail pages. Supports multi-line text.
+</ResponseField>
+
+<ResponseField name="weight" type="integer" required>
+  Product weight in grams. Used for shipping calculations.
+</ResponseField>
+
+<ResponseField name="stock" type="integer" required>
+  Current inventory count. When `0`, the product is out of stock. The storefront should check this field before allowing add-to-cart.
+</ResponseField>
+
+<ResponseField name="category" type="relation (oneToOne → Category)">
+  Reference to the [Category](/data-models/category) this product belongs to. A product belongs to at most one category.
+
+  <Expandable title="Category relation fields">
+    <ResponseField name="category.id" type="integer">
+      The category's unique identifier.
+    </ResponseField>
+    <ResponseField name="category.title" type="string">
+      The category display name.
+    </ResponseField>
+    <ResponseField name="category.slug" type="string">
+      The category URL slug.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="cover" type="media (single image)">
+  Primary product image shown in listings and as the default product photo. Accepts image files only.
+</ResponseField>
+
+<ResponseField name="wallpaper" type="media (single image)">
+  Full-width background image used on the product detail page hero section. Accepts image files only.
+</ResponseField>
+
+<ResponseField name="gallery" type="media (multiple images)">
+  Additional product images shown in a gallery or carousel on the product detail page. Accepts multiple image files.
+</ResponseField>
+
+<ResponseField name="image" type="string">
+  Optional external image URL. Use when the product image is hosted outside of Strapi's media library.
+</ResponseField>
+
+<ResponseField name="video" type="string">
+  Optional URL to a product video (e.g., a YouTube or Vimeo embed URL).
+</ResponseField>
+
+<ResponseField name="publishedAt" type="datetime">
+  Strapi draft/publish timestamp. When `null`, the product is in **draft** state and not visible on the storefront. When set, the product is **published**.
+</ResponseField>
+
+## Draft and publish workflow
+
+Products use Strapi's built-in draft/publish system. A product can be in one of two states:
+
+| State | `publishedAt` | Visible to storefront |
+|-------|--------------|----------------------|
+| Draft | `null` | No |
+| Published | ISO 8601 datetime | Yes |
+
+By default, Strapi's REST API returns only published entries unless the request is authenticated with a role that has permission to view drafts.
+
+## Example response
+
+```json
+{
+  "id": 1,
+  "title": "Espresso Blend 250g",
+  "slug": "espresso-blend-250g",
+  "price": 1800,
+  "discount": 10,
+  "summary": "A rich, full-bodied espresso blend with notes of dark chocolate and caramel.",
+  "weight": 250,
+  "stock": 42,
+  "video": null,
+  "image": null,
+  "cover": {
+    "id": 5,
+    "url": "/uploads/espresso_blend_cover.jpg",
+    "width": 800,
+    "height": 800
+  },
+  "wallpaper": {
+    "id": 6,
+    "url": "/uploads/espresso_blend_wallpaper.jpg",
+    "width": 1920,
+    "height": 1080
+  },
+  "gallery": [
+    { "id": 7, "url": "/uploads/espresso_blend_gallery_1.jpg" },
+    { "id": 8, "url": "/uploads/espresso_blend_gallery_2.jpg" }
+  ],
+  "category": {
+    "id": 2,
+    "title": "Espresso",
+    "slug": "espresso"
+  },
+  "publishedAt": "2025-01-15T10:00:00.000Z"
+}
+```

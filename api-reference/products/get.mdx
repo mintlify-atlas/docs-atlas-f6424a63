@@ -1,0 +1,149 @@
+---
+title: 'Get a product'
+description: 'Retrieve a single product by its numeric ID.'
+keywords: ['product', 'get', 'single', 'rest']
+api: 'GET http://localhost:1337/api/products/{id}'
+---
+
+# Get a product
+
+Returns a single product object by its numeric ID. Published products are accessible without authentication.
+
+## Request
+
+**`GET /api/products/:id`**
+
+### Headers
+
+<ParamField header="Content-Type" type="string" required>
+  Must be `application/json`.
+</ParamField>
+
+<ParamField header="Authorization" type="string">
+  `Bearer <jwt_token>`. Optional for published products. Required to access draft content.
+</ParamField>
+
+### Path parameters
+
+<ParamField path="id" type="number" required>
+  The numeric ID of the product to retrieve.
+</ParamField>
+
+### Query parameters
+
+<ParamField query="populate" type="string">
+  Relations and media to include. Use `*` for all top-level relations, or specify individual fields (e.g., `populate[category]=true`).
+</ParamField>
+
+## Response
+
+<ResponseField name="data" type="object">
+  The product object.
+  <Expandable title="properties">
+    <ResponseField name="id" type="number">
+      Unique numeric ID of the product.
+    </ResponseField>
+    <ResponseField name="title" type="string">
+      Product name.
+    </ResponseField>
+    <ResponseField name="price" type="number">
+      Price in the smallest currency unit (e.g., cents).
+    </ResponseField>
+    <ResponseField name="discount" type="number">
+      Discount percentage applied to the product.
+    </ResponseField>
+    <ResponseField name="summary" type="string">
+      Short description of the product.
+    </ResponseField>
+    <ResponseField name="slug" type="string">
+      URL-friendly identifier.
+    </ResponseField>
+    <ResponseField name="video" type="object">
+      Associated video media (populated when requested).
+    </ResponseField>
+    <ResponseField name="cover" type="object">
+      Cover image media (populated when requested).
+    </ResponseField>
+    <ResponseField name="wallpaper" type="object">
+      Wallpaper image media (populated when requested).
+    </ResponseField>
+    <ResponseField name="gallery" type="object[]">
+      Array of gallery images (populated when requested).
+    </ResponseField>
+    <ResponseField name="weight" type="number">
+      Product weight in grams.
+    </ResponseField>
+    <ResponseField name="category" type="object">
+      Associated category (populated when requested).
+    </ResponseField>
+    <ResponseField name="stock" type="number">
+      Available stock quantity.
+    </ResponseField>
+    <ResponseField name="image" type="object">
+      Primary product image (populated when requested).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Empty object for single-resource responses.
+</ResponseField>
+
+<RequestExample>
+
+```bash curl
+curl http://localhost:1337/api/products/1?populate=* \
+  --header 'Content-Type: application/json'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "data": {
+    "id": 1,
+    "title": "House Blend Coffee",
+    "price": 12000,
+    "discount": 10,
+    "summary": "Smooth, balanced blend with notes of chocolate and citrus.",
+    "slug": "house-blend-coffee",
+    "weight": 250,
+    "stock": 80,
+    "video": null,
+    "cover": {
+      "id": 5,
+      "url": "/uploads/house_blend_cover.jpg",
+      "alternativeText": "House Blend Coffee bag"
+    },
+    "wallpaper": null,
+    "gallery": [],
+    "image": {
+      "id": 6,
+      "url": "/uploads/house_blend_thumb.jpg",
+      "alternativeText": "House Blend Coffee thumbnail"
+    },
+    "category": {
+      "id": 2,
+      "name": "Whole Bean",
+      "slug": "whole-bean"
+    }
+  },
+  "meta": {}
+}
+```
+
+```json 404
+{
+  "data": null,
+  "error": {
+    "status": 404,
+    "name": "NotFoundError",
+    "message": "Not Found",
+    "details": {}
+  }
+}
+```
+
+</ResponseExample>

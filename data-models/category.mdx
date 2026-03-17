@@ -1,0 +1,78 @@
+---
+title: 'Category'
+description: 'The Category model groups products into named collections displayed in the Cafe Acacias storefront navigation and filters.'
+keywords: ['category', 'data model', 'schema', 'collection type']
+---
+
+The `Category` collection type organizes products into browsable groups. Categories are displayed in the storefront UI and support ordering to control the sequence in which they appear. Like products, categories use a **draft/publish workflow**.
+
+<Note>
+  The `slug` field is auto-generated from `title`. Only published categories are returned to unauthenticated storefront requests.
+</Note>
+
+## Fields
+
+<ResponseField name="id" type="integer" required>
+  Auto-generated unique identifier assigned by Strapi.
+</ResponseField>
+
+<ResponseField name="title" type="string" required>
+  Display name of the category (e.g., `"Espresso"`, `"Cold Brew"`). Used as the source for `slug` auto-generation.
+</ResponseField>
+
+<ResponseField name="slug" type="string (UID)" required>
+  URL-safe unique identifier auto-generated from `title`. Used in storefront routes and product filters (e.g., `/category/espresso`). Must be unique across all categories.
+</ResponseField>
+
+<ResponseField name="order" type="integer" required>
+  Numeric sort order that controls the position of this category in the storefront UI. Lower values appear first. For example, a category with `order: 1` renders before one with `order: 2`.
+
+  Use non-contiguous values (e.g., 10, 20, 30) to leave room for inserting categories later without renumbering.
+</ResponseField>
+
+<ResponseField name="icon" type="media (single image)" required>
+  Icon image displayed alongside the category name in the storefront navigation and filter bar. Accepts image files only (SVG, PNG, or WEBP recommended).
+</ResponseField>
+
+<ResponseField name="publishedAt" type="datetime">
+  Strapi draft/publish timestamp. When `null`, the category is in **draft** state and not visible on the storefront. When set, the category is **published**.
+</ResponseField>
+
+## Draft and publish workflow
+
+Categories use the same draft/publish system as products.
+
+| State | `publishedAt` | Visible to storefront |
+|-------|--------------|----------------------|
+| Draft | `null` | No |
+| Published | ISO 8601 datetime | Yes |
+
+<Warning>
+  If a category is unpublished, it will no longer appear in the storefront filter UI. Products that reference the unpublished category remain published and accessible, but they will not be associated with a visible category.
+</Warning>
+
+## Ordering categories
+
+The `order` field is the only mechanism for controlling category sort order. The Strapi admin panel does not automatically reorder categories. When fetching categories for the storefront, always sort by `order` ascending:
+
+```http
+GET /api/categories?sort=order:asc&populate=icon
+```
+
+## Example response
+
+```json
+{
+  "id": 2,
+  "title": "Espresso",
+  "slug": "espresso",
+  "order": 10,
+  "icon": {
+    "id": 3,
+    "url": "/uploads/icon_espresso.svg",
+    "width": 48,
+    "height": 48
+  },
+  "publishedAt": "2025-01-10T08:00:00.000Z"
+}
+```

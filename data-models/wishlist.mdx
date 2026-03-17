@@ -1,0 +1,141 @@
+---
+title: "Wishlist"
+description: "The Wishlist model links a user to a saved product. Each entry represents a single product saved to a user's wishlist."
+keywords: ["wishlist", "data model", "schema", "collection type", "favorites"]
+---
+
+The `Wishlist` collection type tracks products that a user has saved for later. Each record links a single user to a single product. To save multiple products, the client creates one wishlist entry per product.
+
+Wishlist entries support a **draft/publish workflow**, though in practice all entries are created as published.
+
+## Fields
+
+<ResponseField name="id" type="integer" required>
+  Auto-generated unique identifier assigned by Strapi.
+</ResponseField>
+
+<ResponseField name="product" type="relation (oneToOne → Product)">
+  Reference to the [Product](/data-models/product) that the user has saved. Each wishlist entry points to exactly one product.
+
+  <Expandable title="Product relation fields">
+    <ResponseField name="product.id" type="integer">
+      The product's unique identifier.
+    </ResponseField>
+    <ResponseField name="product.title" type="string">
+      The product display name.
+    </ResponseField>
+    <ResponseField name="product.slug" type="string">
+      The product URL slug.
+    </ResponseField>
+    <ResponseField name="product.price" type="integer">
+      The product price.
+    </ResponseField>
+    <ResponseField name="product.cover" type="object">
+      The product cover image.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="user" type="relation (oneToOne → User)">
+  Reference to the `users-permissions` plugin user who saved this product.
+
+  <Expandable title="User relation fields">
+    <ResponseField name="user.id" type="integer">
+      The user's unique identifier.
+    </ResponseField>
+    <ResponseField name="user.email" type="string">
+      The user's email address.
+    </ResponseField>
+    <ResponseField name="user.username" type="string">
+      The user's username.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="publishedAt" type="datetime">
+  Strapi draft/publish timestamp. Wishlist entries are typically created as published.
+</ResponseField>
+
+## Usage pattern
+
+The wishlist is managed by creating and deleting individual entries — there is no add/remove action on a single document.
+
+### Add a product to the wishlist
+
+Create a new wishlist entry with the authenticated user's ID and the target product ID:
+
+```http
+POST /api/wishlists
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+```json
+{
+  "data": {
+    "product": 1,
+    "user": 7
+  }
+}
+```
+
+### List a user's wishlist
+
+Filter entries by the authenticated user and populate the product relation:
+
+```http
+GET /api/wishlists?filters[user][id][$eq]=7&populate=product.cover
+Authorization: Bearer <token>
+```
+
+### Remove a product from the wishlist
+
+Delete the wishlist entry by its `id`:
+
+```http
+DELETE /api/wishlists/34
+Authorization: Bearer <token>
+```
+
+### Check if a product is wishlisted
+
+Query for an entry matching both the user and the product:
+
+```http
+GET /api/wishlists?filters[user][id][$eq]=7&filters[product][id][$eq]=1
+Authorization: Bearer <token>
+```
+
+If the response `data` array is non-empty, the product is in the user's wishlist.
+
+<Note>
+  To prevent duplicate wishlist entries for the same user/product combination, check for an existing entry before creating a new one, or enforce uniqueness at the application layer.
+</Note>
+
+## Example response
+
+```json
+{
+  "id": 34,
+  "product": {
+    "id": 1,
+    "title": "Espresso Blend 250g",
+    "slug": "espresso-blend-250g",
+    "price": 1800,
+    "cover": {
+      "id": 5,
+      "url": "/uploads/espresso_blend_cover.jpg",
+      "width": 800,
+      "height": 800
+    }
+  },
+  "user": {
+    "id": 7,
+    "email": "maria@example.com",
+    "username": "maria_garcia"
+  },
+  "publishedAt": "2025-03-05T11:20:00.000Z",
+  "createdAt": "2025-03-05T11:20:00.000Z",
+  "updatedAt": "2025-03-05T11:20:00.000Z"
+}
+```

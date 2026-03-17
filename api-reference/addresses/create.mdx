@@ -1,0 +1,133 @@
+---
+title: 'Create an address'
+description: 'Create a new address for the authenticated user.'
+sidebarTitle: 'Create address'
+---
+
+<Note>
+  This endpoint requires authentication. Include a valid JWT in the `Authorization` header.
+</Note>
+
+## Request headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token. Format: `Bearer <jwt_token>`
+</ParamField>
+
+<ParamField header="Content-Type" type="string" required default="application/json">
+  Must be `application/json`.
+</ParamField>
+
+## Request body
+
+Wrap all fields in a top-level `data` object.
+
+<ParamField body="data.title" type="string" required>
+  User-friendly label for the address, e.g. `Home` or `Work`.
+</ParamField>
+
+<ParamField body="data.name" type="string" required>
+  Recipient's full name.
+</ParamField>
+
+<ParamField body="data.address" type="string" required>
+  Street address.
+</ParamField>
+
+<ParamField body="data.city" type="string" required>
+  City.
+</ParamField>
+
+<ParamField body="data.state" type="string" required>
+  State, province, or department.
+</ParamField>
+
+<ParamField body="data.postalCode" type="string" required>
+  Postal or ZIP code.
+</ParamField>
+
+<ParamField body="data.phone" type="string" required>
+  Phone number digits.
+</ParamField>
+
+<ParamField body="data.dialCode" type="string">
+  International dial code, e.g. `+57`. Optional.
+</ParamField>
+
+<ParamField body="data.user" type="number" required>
+  ID of the user this address belongs to.
+</ParamField>
+
+## Response fields
+
+<ResponseField name="data" type="object">
+  The created address object.
+  <Expandable title="address object">
+    <ResponseField name="id" type="number">
+      Unique identifier for the address.
+    </ResponseField>
+    <ResponseField name="attributes" type="object">
+      <Expandable title="attributes">
+        <ResponseField name="title" type="string">User-friendly label.</ResponseField>
+        <ResponseField name="name" type="string">Recipient's full name.</ResponseField>
+        <ResponseField name="address" type="string">Street address.</ResponseField>
+        <ResponseField name="city" type="string">City.</ResponseField>
+        <ResponseField name="state" type="string">State, province, or department.</ResponseField>
+        <ResponseField name="postalCode" type="string">Postal or ZIP code.</ResponseField>
+        <ResponseField name="phone" type="string">Phone number digits.</ResponseField>
+        <ResponseField name="dialCode" type="string">International dial code.</ResponseField>
+        <ResponseField name="createdAt" type="string">ISO 8601 creation timestamp.</ResponseField>
+        <ResponseField name="updatedAt" type="string">ISO 8601 last-updated timestamp.</ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Examples
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url 'http://localhost:1337/api/addresses' \
+  --header 'Authorization: Bearer <jwt_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "data": {
+      "title": "Home",
+      "name": "John Doe",
+      "address": "Calle 123",
+      "city": "Bogotá",
+      "state": "Cundinamarca",
+      "postalCode": "110111",
+      "phone": "3001234567",
+      "dialCode": "+57",
+      "user": 1
+    }
+  }'
+```
+
+</CodeGroup>
+
+### Response
+
+```json 200
+{
+  "data": {
+    "id": 1,
+    "attributes": {
+      "title": "Home",
+      "name": "John Doe",
+      "address": "Calle 123",
+      "city": "Bogotá",
+      "state": "Cundinamarca",
+      "postalCode": "110111",
+      "phone": "3001234567",
+      "dialCode": "+57",
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T10:30:00.000Z"
+    }
+  },
+  "meta": {}
+}
+```

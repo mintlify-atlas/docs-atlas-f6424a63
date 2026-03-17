@@ -1,0 +1,162 @@
+---
+title: 'Create a product'
+description: 'Create a new product in the catalog.'
+keywords: ['product', 'create', 'post', 'rest']
+api: 'POST http://localhost:1337/api/products'
+---
+
+# Create a product
+
+Creates a new product in the catalog. Requires a valid JWT token with create permissions on the `product` content type.
+
+## Request
+
+**`POST /api/products`**
+
+### Headers
+
+<ParamField header="Content-Type" type="string" required>
+  Must be `application/json`.
+</ParamField>
+
+<ParamField header="Authorization" type="string" required>
+  `Bearer <jwt_token>`. Must have create permissions on the `product` content type.
+</ParamField>
+
+### Body
+
+Wrap all fields inside a `data` object:
+
+<ParamField body="data" type="object" required>
+  Container object for the product fields.
+  <Expandable title="properties" defaultOpen>
+    <ParamField body="data.title" type="string" required>
+      Product name.
+    </ParamField>
+    <ParamField body="data.price" type="number" required>
+      Price in the smallest currency unit (e.g., cents). Example: `12000` for $120.00.
+    </ParamField>
+    <ParamField body="data.summary" type="string" required>
+      Short description of the product.
+    </ParamField>
+    <ParamField body="data.weight" type="number" required>
+      Product weight in grams.
+    </ParamField>
+    <ParamField body="data.stock" type="number" required>
+      Available stock quantity.
+    </ParamField>
+    <ParamField body="data.discount" type="number">
+      Discount percentage (0–100). Defaults to `0` if omitted.
+    </ParamField>
+    <ParamField body="data.slug" type="string">
+      URL-friendly identifier. Auto-generated from `title` if omitted.
+    </ParamField>
+    <ParamField body="data.video" type="number">
+      ID of an uploaded media file to attach as a video.
+    </ParamField>
+    <ParamField body="data.cover" type="number">
+      ID of an uploaded media file to use as the cover image.
+    </ParamField>
+    <ParamField body="data.wallpaper" type="number">
+      ID of an uploaded media file to use as the wallpaper image.
+    </ParamField>
+    <ParamField body="data.gallery" type="number[]">
+      Array of media file IDs to include in the product gallery.
+    </ParamField>
+    <ParamField body="data.category" type="number">
+      ID of the category to associate with this product.
+    </ParamField>
+    <ParamField body="data.image" type="number">
+      ID of an uploaded media file to use as the primary thumbnail image.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+<ResponseField name="data" type="object">
+  The newly created product object, including its generated `id`.
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Empty object for single-resource responses.
+</ResponseField>
+
+<RequestExample>
+
+```bash curl
+curl --request POST \
+  --url http://localhost:1337/api/products \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <jwt_token>' \
+  --data '{
+    "data": {
+      "title": "Single Origin Ethiopia",
+      "price": 15000,
+      "summary": "Bright and fruity single origin from the Yirgacheffe region.",
+      "weight": 250,
+      "stock": 50,
+      "discount": 0
+    }
+  }'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 201
+{
+  "data": {
+    "id": 7,
+    "title": "Single Origin Ethiopia",
+    "price": 15000,
+    "discount": 0,
+    "summary": "Bright and fruity single origin from the Yirgacheffe region.",
+    "slug": "single-origin-ethiopia",
+    "weight": 250,
+    "stock": 50,
+    "video": null,
+    "cover": null,
+    "wallpaper": null,
+    "gallery": [],
+    "image": null,
+    "category": null
+  },
+  "meta": {}
+}
+```
+
+```json 400
+{
+  "data": null,
+  "error": {
+    "status": 400,
+    "name": "ValidationError",
+    "message": "price is a required field",
+    "details": {
+      "errors": [
+        {
+          "path": ["price"],
+          "message": "price is a required field",
+          "name": "ValidationError"
+        }
+      ]
+    }
+  }
+}
+```
+
+```json 401
+{
+  "data": null,
+  "error": {
+    "status": 401,
+    "name": "UnauthorizedError",
+    "message": "Missing or invalid credentials",
+    "details": {}
+  }
+}
+```
+
+</ResponseExample>

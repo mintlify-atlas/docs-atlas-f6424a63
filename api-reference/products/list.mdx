@@ -1,0 +1,174 @@
+---
+title: 'List products'
+description: 'Retrieve a paginated list of all published products.'
+keywords: ['products', 'list', 'get', 'rest']
+api: 'GET http://localhost:1337/api/products'
+---
+
+# List products
+
+Returns a paginated array of product objects. By default, only published products are returned. Accessing draft products requires authentication with appropriate admin rights.
+
+## Request
+
+**`GET /api/products`**
+
+### Headers
+
+<ParamField header="Content-Type" type="string" required>
+  Must be `application/json`.
+</ParamField>
+
+<ParamField header="Authorization" type="string">
+  `Bearer <jwt_token>`. Optional for published products. Required to access draft content.
+</ParamField>
+
+### Query parameters
+
+<ParamField query="populate" type="string">
+  Relations and media to include. Use `*` for all top-level relations, or specify individual fields (e.g., `populate[category]=true`).
+</ParamField>
+
+<ParamField query="filters" type="object">
+  Filter results using Strapi bracket notation. For example: `filters[price][$lte]=20000`.
+</ParamField>
+
+<ParamField query="pagination[page]" type="number" default="1">
+  Page number (1-indexed).
+</ParamField>
+
+<ParamField query="pagination[pageSize]" type="number" default="25">
+  Number of results per page.
+</ParamField>
+
+<ParamField query="sort" type="string">
+  Sort expression. For example: `sort[0]=price:asc`.
+</ParamField>
+
+## Response
+
+<ResponseField name="data" type="object[]">
+  Array of product objects.
+  <Expandable title="product properties">
+    <ResponseField name="id" type="number">
+      Unique numeric ID of the product.
+    </ResponseField>
+    <ResponseField name="title" type="string">
+      Product name.
+    </ResponseField>
+    <ResponseField name="price" type="number">
+      Price in the smallest currency unit (e.g., cents).
+    </ResponseField>
+    <ResponseField name="discount" type="number">
+      Discount percentage applied to the product.
+    </ResponseField>
+    <ResponseField name="summary" type="string">
+      Short description of the product.
+    </ResponseField>
+    <ResponseField name="slug" type="string">
+      URL-friendly identifier.
+    </ResponseField>
+    <ResponseField name="video" type="object">
+      Associated video media (populated when requested).
+    </ResponseField>
+    <ResponseField name="cover" type="object">
+      Cover image media (populated when requested).
+    </ResponseField>
+    <ResponseField name="wallpaper" type="object">
+      Wallpaper image media (populated when requested).
+    </ResponseField>
+    <ResponseField name="gallery" type="object[]">
+      Array of gallery images (populated when requested).
+    </ResponseField>
+    <ResponseField name="weight" type="number">
+      Product weight in grams.
+    </ResponseField>
+    <ResponseField name="category" type="object">
+      Associated category (populated when requested).
+    </ResponseField>
+    <ResponseField name="stock" type="number">
+      Available stock quantity.
+    </ResponseField>
+    <ResponseField name="image" type="object">
+      Primary product image (populated when requested).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Pagination metadata.
+  <Expandable title="properties">
+    <ResponseField name="pagination.page" type="number">
+      Current page number.
+    </ResponseField>
+    <ResponseField name="pagination.pageSize" type="number">
+      Number of items per page.
+    </ResponseField>
+    <ResponseField name="pagination.pageCount" type="number">
+      Total number of pages.
+    </ResponseField>
+    <ResponseField name="pagination.total" type="number">
+      Total number of matching records.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<Note>
+  Only **published** products are returned for unauthenticated requests. To retrieve draft products, include a valid `Authorization` header with admin or editor permissions.
+</Note>
+
+<RequestExample>
+
+```bash curl
+curl http://localhost:1337/api/products?populate=* \
+  --header 'Content-Type: application/json'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "House Blend Coffee",
+      "price": 12000,
+      "discount": 10,
+      "summary": "Smooth, balanced blend with notes of chocolate and citrus.",
+      "slug": "house-blend-coffee",
+      "weight": 250,
+      "stock": 80,
+      "video": null,
+      "cover": {
+        "id": 5,
+        "url": "/uploads/house_blend_cover.jpg",
+        "alternativeText": "House Blend Coffee bag"
+      },
+      "wallpaper": null,
+      "gallery": [],
+      "image": {
+        "id": 6,
+        "url": "/uploads/house_blend_thumb.jpg",
+        "alternativeText": "House Blend Coffee thumbnail"
+      },
+      "category": {
+        "id": 2,
+        "name": "Whole Bean",
+        "slug": "whole-bean"
+      }
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "pageSize": 25,
+      "pageCount": 1,
+      "total": 1
+    }
+  }
+}
+```
+
+</ResponseExample>

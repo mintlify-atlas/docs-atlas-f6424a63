@@ -1,0 +1,266 @@
+---
+title: 'Authentication'
+description: 'Register users, obtain JWT tokens, and authenticate API requests.'
+keywords: ['authentication', 'jwt', 'login', 'register', 'bearer token']
+---
+
+## Overview
+
+The Cafe Acacias API uses JWT-based authentication provided by Strapi's built-in **Users & Permissions** plugin. All tokens expire after **1 day**.
+
+The registration endpoint accepts two custom fields in addition to the standard Strapi fields: `firstName` and `lastName`.
+
+---
+
+## Register
+
+`POST /api/auth/local/register`
+
+Create a new user account.
+
+### Request body
+
+<ParamField body="username" type="string" required>
+  Unique username for the account.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  User's email address. Must be unique.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  Account password. Use a strong password of at least 8 characters.
+</ParamField>
+
+<ParamField body="firstName" type="string">
+  User's first name.
+</ParamField>
+
+<ParamField body="lastName" type="string">
+  User's last name.
+</ParamField>
+
+### Response
+
+<ResponseField name="jwt" type="string" required>
+  Signed JWT token. Include this in the `Authorization` header for authenticated requests. Expires in 1 day.
+</ResponseField>
+
+<ResponseField name="user" type="object" required>
+  The newly created user object.
+
+  <Expandable title="properties">
+    <ResponseField name="id" type="number">
+      Unique user ID.
+    </ResponseField>
+    <ResponseField name="username" type="string">
+      The account username.
+    </ResponseField>
+    <ResponseField name="email" type="string">
+      The account email address.
+    </ResponseField>
+    <ResponseField name="firstName" type="string">
+      User's first name.
+    </ResponseField>
+    <ResponseField name="lastName" type="string">
+      User's last name.
+    </ResponseField>
+    <ResponseField name="confirmed" type="boolean">
+      Whether the account email has been confirmed.
+    </ResponseField>
+    <ResponseField name="blocked" type="boolean">
+      Whether the account is blocked.
+    </ResponseField>
+    <ResponseField name="createdAt" type="string">
+      ISO 8601 timestamp of account creation.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Examples
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:1337/api/auth/local/register \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "username": "johndoe",
+    "email": "john@example.com",
+    "password": "SecurePass123!",
+    "firstName": "John",
+    "lastName": "Doe"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('http://localhost:1337/api/auth/local/register', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    username: 'johndoe',
+    email: 'john@example.com',
+    password: 'SecurePass123!',
+    firstName: 'John',
+    lastName: 'Doe',
+  }),
+});
+
+const { jwt, user } = await response.json();
+```
+
+</CodeGroup>
+
+**Response**
+
+```json
+{
+  "jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "username": "johndoe",
+    "email": "john@example.com",
+    "firstName": "John",
+    "lastName": "Doe",
+    "confirmed": true,
+    "blocked": false,
+    "createdAt": "2026-03-17T00:00:00.000Z"
+  }
+}
+```
+
+---
+
+## Login
+
+`POST /api/auth/local`
+
+Authenticate an existing user and retrieve a JWT token.
+
+### Request body
+
+<ParamField body="identifier" type="string" required>
+  The user's email address or username.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  The account password.
+</ParamField>
+
+### Response
+
+<ResponseField name="jwt" type="string" required>
+  Signed JWT token. Expires in 1 day.
+</ResponseField>
+
+<ResponseField name="user" type="object" required>
+  The authenticated user object.
+
+  <Expandable title="properties">
+    <ResponseField name="id" type="number">
+      Unique user ID.
+    </ResponseField>
+    <ResponseField name="username" type="string">
+      The account username.
+    </ResponseField>
+    <ResponseField name="email" type="string">
+      The account email address.
+    </ResponseField>
+    <ResponseField name="firstName" type="string">
+      User's first name.
+    </ResponseField>
+    <ResponseField name="lastName" type="string">
+      User's last name.
+    </ResponseField>
+    <ResponseField name="confirmed" type="boolean">
+      Whether the account email has been confirmed.
+    </ResponseField>
+    <ResponseField name="blocked" type="boolean">
+      Whether the account is blocked.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Examples
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url http://localhost:1337/api/auth/local \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "identifier": "john@example.com",
+    "password": "SecurePass123!"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('http://localhost:1337/api/auth/local', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    identifier: 'john@example.com',
+    password: 'SecurePass123!',
+  }),
+});
+
+const { jwt, user } = await response.json();
+```
+
+</CodeGroup>
+
+**Response**
+
+```json
+{
+  "jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "username": "johndoe",
+    "email": "john@example.com",
+    "firstName": "John",
+    "lastName": "Doe",
+    "confirmed": true,
+    "blocked": false
+  }
+}
+```
+
+---
+
+## Using the token
+
+Include the JWT in the `Authorization` header as a Bearer token on any request that requires authentication:
+
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+<CodeGroup>
+
+```bash cURL
+curl http://localhost:1337/api/orders \
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+```
+
+```javascript JavaScript
+const response = await fetch('http://localhost:1337/api/orders', {
+  headers: {
+    Authorization: `Bearer ${jwt}`,
+  },
+});
+
+const data = await response.json();
+```
+
+</CodeGroup>
+
+<Warning>
+  JWT tokens expire after 1 day. When a token expires, the API returns a `401 Unauthorized` response. Your client must re-authenticate by calling the login endpoint to obtain a new token.
+</Warning>
+
+<Note>
+  Store tokens securely. In browser environments, prefer `httpOnly` cookies over `localStorage` to reduce XSS exposure.
+</Note>

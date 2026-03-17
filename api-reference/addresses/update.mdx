@@ -1,0 +1,128 @@
+---
+title: 'Update an address'
+description: 'Update an existing address by ID. Partial updates are supported — only include the fields you want to change.'
+sidebarTitle: 'Update address'
+---
+
+<Note>
+  This endpoint requires authentication. Include a valid JWT in the `Authorization` header.
+</Note>
+
+## Path parameters
+
+<ParamField path="id" type="number" required>
+  The ID of the address to update.
+</ParamField>
+
+## Request headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token. Format: `Bearer <jwt_token>`
+</ParamField>
+
+<ParamField header="Content-Type" type="string" required default="application/json">
+  Must be `application/json`.
+</ParamField>
+
+## Request body
+
+Wrap the fields you want to update in a top-level `data` object. All fields are optional — only the fields you include will be updated.
+
+<ParamField body="data.title" type="string">
+  User-friendly label for the address, e.g. `Home` or `Work`.
+</ParamField>
+
+<ParamField body="data.name" type="string">
+  Recipient's full name.
+</ParamField>
+
+<ParamField body="data.address" type="string">
+  Street address.
+</ParamField>
+
+<ParamField body="data.city" type="string">
+  City.
+</ParamField>
+
+<ParamField body="data.state" type="string">
+  State, province, or department.
+</ParamField>
+
+<ParamField body="data.postalCode" type="string">
+  Postal or ZIP code.
+</ParamField>
+
+<ParamField body="data.phone" type="string">
+  Phone number digits.
+</ParamField>
+
+<ParamField body="data.dialCode" type="string">
+  International dial code, e.g. `+57`.
+</ParamField>
+
+## Response fields
+
+<ResponseField name="data" type="object">
+  The updated address object.
+  <Expandable title="address object">
+    <ResponseField name="id" type="number">
+      Unique identifier for the address.
+    </ResponseField>
+    <ResponseField name="attributes" type="object">
+      <Expandable title="attributes">
+        <ResponseField name="title" type="string">User-friendly label.</ResponseField>
+        <ResponseField name="name" type="string">Recipient's full name.</ResponseField>
+        <ResponseField name="address" type="string">Street address.</ResponseField>
+        <ResponseField name="city" type="string">City.</ResponseField>
+        <ResponseField name="state" type="string">State, province, or department.</ResponseField>
+        <ResponseField name="postalCode" type="string">Postal or ZIP code.</ResponseField>
+        <ResponseField name="phone" type="string">Phone number digits.</ResponseField>
+        <ResponseField name="dialCode" type="string">International dial code.</ResponseField>
+        <ResponseField name="createdAt" type="string">ISO 8601 creation timestamp.</ResponseField>
+        <ResponseField name="updatedAt" type="string">ISO 8601 last-updated timestamp.</ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Examples
+
+<CodeGroup>
+
+```bash cURL
+curl --request PUT \
+  --url 'http://localhost:1337/api/addresses/1' \
+  --header 'Authorization: Bearer <jwt_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "data": {
+      "title": "Office",
+      "phone": "3009876543"
+    }
+  }'
+```
+
+</CodeGroup>
+
+### Response
+
+```json 200
+{
+  "data": {
+    "id": 1,
+    "attributes": {
+      "title": "Office",
+      "name": "John Doe",
+      "address": "Calle 123",
+      "city": "Bogotá",
+      "state": "Cundinamarca",
+      "postalCode": "110111",
+      "phone": "3009876543",
+      "dialCode": "+57",
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T11:45:00.000Z"
+    }
+  },
+  "meta": {}
+}
+```

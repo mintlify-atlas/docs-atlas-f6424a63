@@ -1,0 +1,123 @@
+---
+title: 'Get order'
+description: 'Retrieve a single order by its numeric ID. Authentication required.'
+api: 'GET http://localhost:1337/api/orders/{id}'
+---
+
+Returns a single order by its numeric ID. Authentication is required.
+
+<Warning>
+  This endpoint requires authentication. Requests without a valid `Authorization: Bearer <jwt_token>` header will return a `401 Unauthorized` error.
+</Warning>
+
+## Path parameters
+
+<ParamField path="id" type="number" required>
+  Numeric ID of the order to retrieve.
+</ParamField>
+
+## Order states
+
+The `state` field reflects the current stage of the order lifecycle:
+
+| State | Description |
+|---|---|
+| `Pedido creado` | Order has been created and payment is pending. |
+| `Pago confirmado` | Payment was confirmed by the gateway. |
+| `Preparando tu café` | Order is being prepared. |
+| `Enviado` | Order has been shipped. |
+| `Entregado` | Order was delivered to the customer. |
+| `Cancelado` | Order was cancelled. |
+
+## Response
+
+<ResponseField name="data" type="object">
+  The order object.
+
+  <Expandable title="properties" defaultOpen={true}>
+    <ResponseField name="id" type="number">
+      Unique numeric identifier.
+    </ResponseField>
+
+    <ResponseField name="totalPayment" type="number">
+      Total amount charged, calculated from product prices after discounts.
+    </ResponseField>
+
+    <ResponseField name="idPayment" type="string">
+      UUID payment reference used with the Bold payment gateway.
+    </ResponseField>
+
+    <ResponseField name="state" type="string">
+      Current order status. See the state table above for possible values.
+    </ResponseField>
+
+    <ResponseField name="addressShiping" type="object">
+      JSON shipping address object provided at checkout.
+    </ResponseField>
+
+    <ResponseField name="products" type="object[]">
+      JSON array of products in the order.
+    </ResponseField>
+
+    <ResponseField name="user" type="object">
+      Associated user. Populated when `populate=user` is included.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl "http://localhost:1337/api/orders/7?populate=*" \
+  -H "Authorization: Bearer <jwt_token>" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "data": {
+    "id": 7,
+    "totalPayment": 45000,
+    "idPayment": "a3f1c2e4-7d88-4b21-9f3a-0c1234567890",
+    "state": "Preparando tu café",
+    "addressShiping": {
+      "street": "Calle 45 # 12-34",
+      "city": "Bogotá",
+      "zip": "110111"
+    },
+    "products": [
+      {
+        "id": 3,
+        "title": "Café Especial 250g",
+        "price": 25000,
+        "discount": 10,
+        "quantity": 2
+      }
+    ],
+    "user": {
+      "id": 42,
+      "username": "maria.garcia",
+      "email": "maria@example.com"
+    }
+  },
+  "meta": {}
+}
+```
+
+```json 404
+{
+  "data": null,
+  "error": {
+    "status": 404,
+    "name": "NotFoundError",
+    "message": "Not Found",
+    "details": {}
+  }
+}
+```
+
+</ResponseExample>

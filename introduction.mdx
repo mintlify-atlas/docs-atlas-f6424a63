@@ -1,0 +1,71 @@
+---
+title: "Introduction"
+description: "Cafe Acacias E-commerce API — a Strapi-powered headless backend for your coffee e-commerce platform."
+---
+
+## What is Cafe Acacias E-commerce API?
+
+Cafe Acacias E-commerce API is a headless CMS backend built on [Strapi v5](https://strapi.io), providing a complete REST API for running a coffee e-commerce store. It handles product catalogs, order management, user authentication, wishlists, and shipping addresses — everything your frontend needs to build a full shopping experience.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get the API running locally in minutes
+  </Card>
+  <Card title="Authentication" icon="lock" href="/authentication">
+    Learn how JWT authentication works
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
+    Explore every endpoint with request and response examples
+  </Card>
+  <Card title="Data Models" icon="database" href="/data-models/product">
+    Understand the product, order, and user data structures
+  </Card>
+</CardGroup>
+
+## Core features
+
+<CardGroup cols={2}>
+  <Card title="Product catalog" icon="box">
+    Manage products with pricing, discounts, stock levels, media galleries, and category associations.
+  </Card>
+  <Card title="Order management" icon="cart-shopping">
+    Process orders with Bold payment gateway integration, SHA-256 integrity hashing, and order state tracking from creation to delivery.
+  </Card>
+  <Card title="User authentication" icon="user-shield">
+    JWT-based authentication via the Strapi Users & Permissions plugin, with custom registration fields (firstName, lastName).
+  </Card>
+  <Card title="Wishlist" icon="heart">
+    Per-user wishlists that save product references for later purchase.
+  </Card>
+  <Card title="Address book" icon="location-dot">
+    Manage multiple shipping addresses per user with full address fields and dial codes.
+  </Card>
+  <Card title="Email notifications" icon="envelope">
+    Transactional email via Nodemailer with configurable SMTP settings.
+  </Card>
+</CardGroup>
+
+## Tech stack
+
+| Component | Technology |
+|-----------|-----------|
+| Framework | Strapi v5 |
+| Database | PostgreSQL (default), MySQL, SQLite |
+| Authentication | JWT (1-day expiry) |
+| Payment | Bold payment gateway |
+| Email | Nodemailer (SMTP) |
+| Runtime | Node.js 18–22 |
+
+## API base URL
+
+All API endpoints are served from:
+
+```
+http://localhost:1337/api
+```
+
+In production, replace `localhost:1337` with your deployed domain.
+
+<Note>
+  The Strapi admin panel is available at `/admin`. Use it to manage content, configure permissions, and create API tokens.
+</Note>

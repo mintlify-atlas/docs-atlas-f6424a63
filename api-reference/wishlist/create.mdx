@@ -1,0 +1,86 @@
+---
+title: "Add to wishlist"
+description: "Add a product to the authenticated user's wishlist."
+sidebarTitle: "Add to wishlist"
+---
+
+<Note>
+  This endpoint requires authentication. Include a valid JWT in the `Authorization` header.
+</Note>
+
+<Tip>
+  Strapi does not enforce uniqueness on wishlist entries automatically. Before creating an entry, check whether the user already has the product in their wishlist by [listing their wishlist](/api-reference/wishlist/list) filtered by `filters[user][id][$eq]=<userId>` and `filters[product][id][$eq]=<productId>`. Create the entry only if no match is found.
+</Tip>
+
+## Request headers
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token. Format: `Bearer <jwt_token>`
+</ParamField>
+
+<ParamField header="Content-Type" type="string" required default="application/json">
+  Must be `application/json`.
+</ParamField>
+
+## Request body
+
+Wrap all fields in a top-level `data` object.
+
+<ParamField body="data.product" type="number" required>
+  ID of the product to add to the wishlist.
+</ParamField>
+
+<ParamField body="data.user" type="number" required>
+  ID of the user adding the product.
+</ParamField>
+
+## Response fields
+
+<ResponseField name="data" type="object">
+  The created wishlist entry.
+  <Expandable title="wishlist entry">
+    <ResponseField name="id" type="number">
+      Unique identifier for the wishlist entry.
+    </ResponseField>
+    <ResponseField name="attributes" type="object">
+      <Expandable title="attributes">
+        <ResponseField name="createdAt" type="string">ISO 8601 creation timestamp.</ResponseField>
+        <ResponseField name="updatedAt" type="string">ISO 8601 last-updated timestamp.</ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Examples
+
+<CodeGroup>
+
+```bash cURL
+curl --request POST \
+  --url 'http://localhost:1337/api/wishlists' \
+  --header 'Authorization: Bearer <jwt_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "data": {
+      "product": 5,
+      "user": 1
+    }
+  }'
+```
+
+</CodeGroup>
+
+### Response
+
+```json 200
+{
+  "data": {
+    "id": 3,
+    "attributes": {
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T10:30:00.000Z"
+    }
+  },
+  "meta": {}
+}
+```

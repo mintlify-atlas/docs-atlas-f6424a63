@@ -1,0 +1,136 @@
+---
+title: 'List orders'
+description: 'Retrieve a list of orders. Authentication required. Typically filtered by user ID.'
+api: 'GET http://localhost:1337/api/orders'
+---
+
+Returns a list of orders. This endpoint requires a valid JWT. In practice, you should always filter results by user ID to return only that user's orders.
+
+<Warning>
+  This endpoint requires authentication. Requests without a valid `Authorization: Bearer <jwt_token>` header will return a `401 Unauthorized` error.
+</Warning>
+
+## Query parameters
+
+<ParamField query="filters[user][id][$eq]" type="number">
+  Filter orders by user ID. Always pass the authenticated user's ID to avoid exposing other users' orders.
+
+  Example: `filters[user][id][$eq]=42`
+</ParamField>
+
+<ParamField query="populate" type="string">
+  Comma-separated relations to populate, or `*` for all. Use `populate=user` to include user details.
+</ParamField>
+
+<ParamField query="pagination[page]" type="number" default="1">
+  Page number for paginated results.
+</ParamField>
+
+<ParamField query="pagination[pageSize]" type="number" default="25">
+  Number of results per page.
+</ParamField>
+
+## Response
+
+<ResponseField name="data" type="object[]">
+  Array of order objects.
+
+  <Expandable title="Order object properties">
+    <ResponseField name="id" type="number">
+      Unique numeric identifier for the order.
+    </ResponseField>
+
+    <ResponseField name="totalPayment" type="number">
+      Total amount charged, in the smallest currency unit (e.g., COP). Calculated from product prices after applying discounts.
+    </ResponseField>
+
+    <ResponseField name="idPayment" type="string">
+      UUID generated at order creation. Used as the payment reference with the Bold payment gateway.
+    </ResponseField>
+
+    <ResponseField name="addressShiping" type="object">
+      JSON object containing the shipping address provided at checkout.
+    </ResponseField>
+
+    <ResponseField name="products" type="object[]">
+      JSON array of product objects included in the order, each with `price`, `discount`, and `quantity`.
+    </ResponseField>
+
+    <ResponseField name="user" type="object">
+      The user associated with this order. Populated when `populate=user` is set.
+    </ResponseField>
+
+    <ResponseField name="state" type="string">
+      Current order status. See [Get order](/api-reference/orders/get) for the full list of state values.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Pagination metadata.
+
+  <Expandable title="meta properties">
+    <ResponseField name="pagination" type="object">
+      <Expandable title="pagination properties">
+        <ResponseField name="page" type="number">Current page.</ResponseField>
+        <ResponseField name="pageSize" type="number">Items per page.</ResponseField>
+        <ResponseField name="pageCount" type="number">Total pages.</ResponseField>
+        <ResponseField name="total" type="number">Total records.</ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl "http://localhost:1337/api/orders?filters[user][id][%24eq]=42&populate=*" \
+  -H "Authorization: Bearer <jwt_token>" \
+  -H "Content-Type: application/json"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "data": [
+    {
+      "id": 7,
+      "totalPayment": 45000,
+      "idPayment": "a3f1c2e4-7d88-4b21-9f3a-0c1234567890",
+      "state": "Pago confirmado",
+      "addressShiping": {
+        "street": "Calle 45 # 12-34",
+        "city": "Bogotá",
+        "zip": "110111"
+      },
+      "products": [
+        {
+          "id": 3,
+          "title": "Café Especial 250g",
+          "price": 25000,
+          "discount": 10,
+          "quantity": 2
+        }
+      ],
+      "user": {
+        "id": 42,
+        "username": "maria.garcia",
+        "email": "maria@example.com"
+      }
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "pageSize": 25,
+      "pageCount": 1,
+      "total": 1
+    }
+  }
+}
+```
+
+</ResponseExample>

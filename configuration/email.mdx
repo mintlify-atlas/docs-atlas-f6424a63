@@ -1,0 +1,131 @@
+---
+title: 'Email configuration'
+description: 'Configure SMTP email delivery for order confirmations and user notifications.'
+keywords: ['email', 'smtp', 'nodemailer', 'sendgrid', 'gmail', 'mailgun', 'strapi']
+---
+
+The Cafe Acacias API uses the [`@strapi/provider-email-nodemailer`](https://www.npmjs.com/package/@strapi/provider-email-nodemailer) plugin to send transactional emails. Nodemailer connects to any SMTP server, giving you full control over the email provider.
+
+Emails are sent for:
+
+- **Order confirmations** — sent to customers after a successful purchase
+- **User registration** — email verification links for new accounts
+- **Password reset** — one-time reset links
+
+## Required environment variables
+
+<ParamField path="SMTP_HOST" type="string" required>
+  SMTP server hostname (e.g., `smtp.sendgrid.net`, `smtp.mailgun.org`).
+</ParamField>
+
+<ParamField path="SMTP_PORT" type="number" required>
+  SMTP server port. Use `465` for implicit TLS (recommended) or `587` for STARTTLS.
+</ParamField>
+
+<ParamField path="SMTP_USERNAME" type="string" required>
+  SMTP authentication username.
+</ParamField>
+
+<ParamField path="SMTP_PASSWORD" type="string" required>
+  SMTP authentication password or provider API key.
+</ParamField>
+
+<ParamField path="SMTP_DEFAULT_FROM" type="string" required>
+  Sender address for all outgoing emails. Accepts a plain address or a display name format: `"Cafe Acacias <noreply@cafeacacias.com>"`.
+</ParamField>
+
+<ParamField path="SMTP_DEFAULT_REPLY_TO" type="string" required>
+  Reply-to address. Customers who reply to automated emails will reach this address.
+</ParamField>
+
+## TLS/SSL
+
+The plugin configuration sets `secure: true`, which enforces implicit TLS on the SMTP connection. This means:
+
+- The connection is encrypted from the first byte — no `STARTTLS` upgrade is needed.
+- Port `465` is the standard port for implicit TLS.
+- Port `587` is typically used with `STARTTLS`; if your provider requires `587`, set `secure: false` in `config/plugins.js` and ensure the provider upgrades the connection.
+
+<Warning>
+  Do not disable TLS in production. Unencrypted SMTP connections expose credentials and email content.
+</Warning>
+
+## Provider configuration
+
+The `.env` snippet for each provider below is sufficient for a working setup. Set `SMTP_DEFAULT_FROM` and `SMTP_DEFAULT_REPLY_TO` to addresses verified with your provider.
+
+<Tabs>
+  <Tab title="SendGrid">
+    SendGrid is the recommended provider for production. Use an API key as the SMTP password.
+
+    ```bash .env
+    SMTP_HOST=smtp.sendgrid.net
+    SMTP_PORT=465
+    SMTP_USERNAME=apikey
+    SMTP_PASSWORD=SG.your_sendgrid_api_key
+    SMTP_DEFAULT_FROM="Cafe Acacias <noreply@cafeacacias.com>"
+    SMTP_DEFAULT_REPLY_TO=support@cafeacacias.com
+    ```
+
+    <Note>
+      The username must be the literal string `apikey` when authenticating with a SendGrid API key.
+    </Note>
+  </Tab>
+  <Tab title="Mailgun">
+    Use an SMTP password generated in the Mailgun dashboard under **Domain settings → SMTP credentials**.
+
+    ```bash .env
+    SMTP_HOST=smtp.mailgun.org
+    SMTP_PORT=465
+    SMTP_USERNAME=postmaster@mg.cafeacacias.com
+    SMTP_PASSWORD=your_mailgun_smtp_password
+    SMTP_DEFAULT_FROM="Cafe Acacias <noreply@cafeacacias.com>"
+    SMTP_DEFAULT_REPLY_TO=support@cafeacacias.com
+    ```
+  </Tab>
+  <Tab title="Gmail">
+    Gmail SMTP works for low-volume development and testing. It is not recommended for production due to sending limits and authentication constraints.
+
+    Enable 2-factor authentication on the Google account, then generate an [App Password](https://myaccount.google.com/apppasswords) to use as `SMTP_PASSWORD`.
+
+    ```bash .env
+    SMTP_HOST=smtp.gmail.com
+    SMTP_PORT=465
+    SMTP_USERNAME=your_address@gmail.com
+    SMTP_PASSWORD=your_16_char_app_password
+    SMTP_DEFAULT_FROM="Cafe Acacias <your_address@gmail.com>"
+    SMTP_DEFAULT_REPLY_TO=your_address@gmail.com
+    ```
+
+    <Warning>
+      Gmail enforces a daily sending limit of 500 emails for regular accounts and 2,000 for Google Workspace accounts. Use a dedicated transactional email provider in production.
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Plugin configuration
+
+The email plugin is configured in `config/plugins.js`. The settings below reflect the defaults shipped with this project.
+
+```javascript config/plugins.js
+module.exports = ({ env }) => ({
+  email: {
+    config: {
+      provider: 'nodemailer',
+      providerOptions: {
+        host: env('SMTP_HOST'),
+        port: env('SMTP_PORT'),
+        secure: true,
+        auth: {
+          user: env('SMTP_USERNAME'),
+          pass: env('SMTP_PASSWORD'),
+        },
+      },
+      settings: {
+        defaultFrom: env('SMTP_DEFAULT_FROM'),
+        defaultReplyTo: env('SMTP_DEFAULT_REPLY_TO'),
+      },
+    },
+  },
+});
+```

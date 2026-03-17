@@ -1,0 +1,114 @@
+---
+title: 'List categories'
+description: 'Retrieve all published categories, optionally sorted by display order.'
+api: 'GET http://localhost:1337/api/categories'
+---
+
+Returns an array of all published categories. Use the `sort` parameter to retrieve them in display order.
+
+<Note>
+  Categories use Strapi's draft/publish system. Only **published** categories are returned by default. Drafts are never included in public responses.
+</Note>
+
+## Query parameters
+
+<ParamField query="populate" type="string">
+  Comma-separated list of relations to populate, or `*` to populate all. For example, `populate=*` includes the category icon and any nested relations.
+</ParamField>
+
+<ParamField query="sort" type="string">
+  Field and direction to sort by. Use `order:asc` to retrieve categories in their intended display order.
+
+  Example: `sort=order:asc`
+</ParamField>
+
+## Response
+
+<ResponseField name="data" type="object[]">
+  Array of category objects.
+
+  <Expandable title="Category object properties">
+    <ResponseField name="id" type="number">
+      Unique numeric identifier for the category.
+    </ResponseField>
+
+    <ResponseField name="title" type="string">
+      Display name of the category.
+    </ResponseField>
+
+    <ResponseField name="slug" type="string">
+      URL-safe identifier used for filtering and routing.
+    </ResponseField>
+
+    <ResponseField name="order" type="number">
+      Numeric position used to control display order. Sort by this field ascending to render categories in the correct sequence.
+    </ResponseField>
+
+    <ResponseField name="icon" type="string">
+      Icon identifier or image reference associated with the category.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Pagination metadata returned by Strapi.
+
+  <Expandable title="meta properties">
+    <ResponseField name="pagination" type="object">
+      <Expandable title="pagination properties">
+        <ResponseField name="page" type="number">Current page number.</ResponseField>
+        <ResponseField name="pageSize" type="number">Number of items per page.</ResponseField>
+        <ResponseField name="pageCount" type="number">Total number of pages.</ResponseField>
+        <ResponseField name="total" type="number">Total number of records.</ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl "http://localhost:1337/api/categories?populate=*&sort=order:asc"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Café Molido",
+      "slug": "cafe-molido",
+      "order": 1,
+      "icon": "coffee-grind"
+    },
+    {
+      "id": 2,
+      "title": "Café en Grano",
+      "slug": "cafe-en-grano",
+      "order": 2,
+      "icon": "coffee-bean"
+    },
+    {
+      "id": 3,
+      "title": "Accesorios",
+      "slug": "accesorios",
+      "order": 3,
+      "icon": "accessories"
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "pageSize": 25,
+      "pageCount": 1,
+      "total": 3
+    }
+  }
+}
+```
+
+</ResponseExample>

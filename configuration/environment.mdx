@@ -1,0 +1,165 @@
+---
+title: 'Environment variables'
+description: 'Reference for all environment variables used by the Cafe Acacias API.'
+keywords: ['environment variables', 'configuration', 'env', 'secrets', 'strapi']
+---
+
+Environment variables control runtime behavior across all deployment environments. Store them in a `.env` file at the project root during local development. In production, set them through your hosting provider's environment management.
+
+<Warning>
+  Never commit your `.env` file to version control. It contains secrets such as JWT signing keys and database credentials.
+</Warning>
+
+## Core
+
+Required for all environments.
+
+<ParamField path="HOST" type="string" default="0.0.0.0">
+  Network interface the server binds to. Use `0.0.0.0` to accept connections on all interfaces.
+</ParamField>
+
+<ParamField path="PORT" type="number" default="1337">
+  TCP port the server listens on.
+</ParamField>
+
+<ParamField path="APP_KEYS" type="string" required>
+  Comma-separated list of secret keys used to sign session cookies. Generate with a cryptographically secure random generator. Example: `"key1,key2"`.
+</ParamField>
+
+<ParamField path="API_TOKEN_SALT" type="string" required>
+  Salt used when hashing API tokens. Changing this invalidates all existing API tokens.
+</ParamField>
+
+<ParamField path="ADMIN_JWT_SECRET" type="string" required>
+  Secret used to sign admin panel JWT tokens. Changing this logs out all admin users.
+</ParamField>
+
+<ParamField path="JWT_SECRET" type="string" required>
+  Secret used to sign end-user JWT tokens issued by the Users & Permissions plugin.
+</ParamField>
+
+<ParamField path="TRANSFER_TOKEN_SALT" type="string" required>
+  Salt used when hashing data transfer tokens.
+</ParamField>
+
+<ParamField path="ENCRYPTION_KEY" type="string" required>
+  Key used to encrypt sensitive data at rest.
+</ParamField>
+
+## Database
+
+See [Database configuration](/configuration/database) for full setup instructions per database engine.
+
+<ParamField path="DATABASE_CLIENT" type="string" default="postgres">
+  Database engine. Accepted values: `postgres`, `mysql`, `sqlite`.
+</ParamField>
+
+<ParamField path="DATABASE_URL" type="string">
+  Full connection string. When set, individual host/port/name/user/password fields are ignored for PostgreSQL. Useful for cloud providers such as Render, Railway, or Heroku.
+</ParamField>
+
+<ParamField path="DATABASE_HOST" type="string" default="localhost">
+  Database server hostname or IP address.
+</ParamField>
+
+<ParamField path="DATABASE_PORT" type="number" default="5432">
+  Database server port. Default is `5432` for PostgreSQL and `3306` for MySQL.
+</ParamField>
+
+<ParamField path="DATABASE_NAME" type="string" default="strapi">
+  Name of the database to connect to.
+</ParamField>
+
+<ParamField path="DATABASE_USERNAME" type="string" default="strapi">
+  Database user name.
+</ParamField>
+
+<ParamField path="DATABASE_PASSWORD" type="string" default="strapi">
+  Database user password.
+</ParamField>
+
+<ParamField path="DATABASE_SCHEMA" type="string" default="public">
+  PostgreSQL schema name.
+</ParamField>
+
+<ParamField path="DATABASE_FILENAME" type="string" default=".tmp/data.db">
+  Path to the SQLite database file, relative to the project root.
+</ParamField>
+
+<ParamField path="DATABASE_SSL" type="boolean" default="false">
+  Enable SSL/TLS for the database connection.
+</ParamField>
+
+<ParamField path="DATABASE_SSL_KEY" type="string">
+  Path or PEM string for the client private key. Required for mutual TLS.
+</ParamField>
+
+<ParamField path="DATABASE_SSL_CERT" type="string">
+  Path or PEM string for the client certificate. Required for mutual TLS.
+</ParamField>
+
+<ParamField path="DATABASE_SSL_CA" type="string">
+  Path or PEM string for the Certificate Authority certificate.
+</ParamField>
+
+<ParamField path="DATABASE_SSL_CAPATH" type="string">
+  Directory containing CA certificate files.
+</ParamField>
+
+<ParamField path="DATABASE_SSL_CIPHER" type="string">
+  Allowed TLS cipher suites.
+</ParamField>
+
+<ParamField path="DATABASE_SSL_REJECT_UNAUTHORIZED" type="boolean" default="true">
+  Reject connections where the server certificate cannot be verified. Set to `false` only for self-signed certificates in non-production environments.
+</ParamField>
+
+<ParamField path="DATABASE_POOL_MIN" type="number" default="2">
+  Minimum number of connections in the connection pool.
+</ParamField>
+
+<ParamField path="DATABASE_POOL_MAX" type="number" default="10">
+  Maximum number of connections in the connection pool.
+</ParamField>
+
+<ParamField path="DATABASE_CONNECTION_TIMEOUT" type="number" default="60000">
+  Time in milliseconds to wait when acquiring a connection before throwing a timeout error.
+</ParamField>
+
+## Email
+
+See [Email configuration](/configuration/email) for provider setup.
+
+<ParamField path="SMTP_HOST" type="string" required>
+  Hostname of the SMTP server (e.g., `smtp.sendgrid.net`).
+</ParamField>
+
+<ParamField path="SMTP_PORT" type="number" required>
+  SMTP server port. Typically `465` for TLS or `587` for STARTTLS.
+</ParamField>
+
+<ParamField path="SMTP_USERNAME" type="string" required>
+  SMTP authentication username.
+</ParamField>
+
+<ParamField path="SMTP_PASSWORD" type="string" required>
+  SMTP authentication password or API key.
+</ParamField>
+
+<ParamField path="SMTP_DEFAULT_FROM" type="string" required>
+  Default sender address for outgoing emails (e.g., `"Cafe Acacias <noreply@cafeacacias.com>"`).
+</ParamField>
+
+<ParamField path="SMTP_DEFAULT_REPLY_TO" type="string" required>
+  Default reply-to address (e.g., `support@cafeacacias.com`).
+</ParamField>
+
+## Payment
+
+<ParamField path="SECRET_KEY_BOLD" type="string" required>
+  Bold Commerce secret key. Used to authenticate server-side requests to the Bold payment API.
+</ParamField>
+
+<ParamField path="API_KEY_BOLD" type="string" required>
+  Bold Commerce public API key. Used to initialize the Bold checkout on the frontend.
+</ParamField>

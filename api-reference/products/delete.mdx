@@ -1,0 +1,107 @@
+---
+title: 'Delete a product'
+description: 'Permanently delete a product from the catalog.'
+keywords: ['product', 'delete', 'rest']
+api: 'DELETE http://localhost:1337/api/products/{id}'
+---
+
+# Delete a product
+
+Permanently deletes a product from the catalog. This action cannot be undone.
+
+## Request
+
+**`DELETE /api/products/:id`**
+
+### Headers
+
+<ParamField header="Content-Type" type="string" required>
+  Must be `application/json`.
+</ParamField>
+
+<ParamField header="Authorization" type="string" required>
+  `Bearer <jwt_token>`. Must have delete permissions on the `product` content type.
+</ParamField>
+
+### Path parameters
+
+<ParamField path="id" type="number" required>
+  The numeric ID of the product to delete.
+</ParamField>
+
+<Warning>
+  Deletion is **permanent**. Strapi v5 does not perform soft deletes on content types by default. Once deleted, the product and all associated data cannot be recovered through the API.
+</Warning>
+
+## Response
+
+On success, the API returns the deleted product object as it existed before deletion.
+
+<ResponseField name="data" type="object">
+  The product object that was deleted.
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Empty object for single-resource responses.
+</ResponseField>
+
+<RequestExample>
+
+```bash curl
+curl --request DELETE \
+  --url http://localhost:1337/api/products/7 \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <jwt_token>'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "data": {
+    "id": 7,
+    "title": "Single Origin Ethiopia",
+    "price": 16000,
+    "discount": 5,
+    "summary": "Bright and fruity single origin from the Yirgacheffe region.",
+    "slug": "single-origin-ethiopia",
+    "weight": 250,
+    "stock": 45,
+    "video": null,
+    "cover": null,
+    "wallpaper": null,
+    "gallery": [],
+    "image": null,
+    "category": null
+  },
+  "meta": {}
+}
+```
+
+```json 401
+{
+  "data": null,
+  "error": {
+    "status": 401,
+    "name": "UnauthorizedError",
+    "message": "Missing or invalid credentials",
+    "details": {}
+  }
+}
+```
+
+```json 404
+{
+  "data": null,
+  "error": {
+    "status": 404,
+    "name": "NotFoundError",
+    "message": "Not Found",
+    "details": {}
+  }
+}
+```
+
+</ResponseExample>

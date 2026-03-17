@@ -1,0 +1,96 @@
+---
+title: 'Get category'
+description: 'Retrieve a single published category by its numeric ID or slug.'
+api: 'GET http://localhost:1337/api/categories/{id}'
+---
+
+Returns a single published category. You can look up a category either by its numeric `id` in the path, or by its `slug` using a filter query.
+
+## Path parameters
+
+<ParamField path="id" type="number" required>
+  Numeric ID of the category to retrieve.
+</ParamField>
+
+## Lookup by slug
+
+If you only have a category slug (for example, from a URL), use the filter query instead of the path parameter:
+
+```
+GET /api/categories?filters[slug][$eq]=cafe-molido&populate=*
+```
+
+This returns the same category object wrapped in a `data` array.
+
+## Response
+
+<ResponseField name="data" type="object">
+  The category object.
+
+  <Expandable title="properties" defaultOpen={true}>
+    <ResponseField name="id" type="number">
+      Unique numeric identifier.
+    </ResponseField>
+
+    <ResponseField name="title" type="string">
+      Display name of the category.
+    </ResponseField>
+
+    <ResponseField name="slug" type="string">
+      URL-safe identifier.
+    </ResponseField>
+
+    <ResponseField name="order" type="number">
+      Numeric position controlling display order.
+    </ResponseField>
+
+    <ResponseField name="icon" type="string">
+      Icon identifier or image reference.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Empty object for single-entry responses.
+</ResponseField>
+
+<RequestExample>
+
+```bash By ID
+curl "http://localhost:1337/api/categories/1?populate=*"
+```
+
+```bash By slug
+curl "http://localhost:1337/api/categories?filters[slug][%24eq]=cafe-molido&populate=*"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "data": {
+    "id": 1,
+    "title": "Café Molido",
+    "slug": "cafe-molido",
+    "order": 1,
+    "icon": "coffee-grind"
+  },
+  "meta": {}
+}
+```
+
+```json 404
+{
+  "data": null,
+  "error": {
+    "status": 404,
+    "name": "NotFoundError",
+    "message": "Not Found",
+    "details": {}
+  }
+}
+```
+
+</ResponseExample>

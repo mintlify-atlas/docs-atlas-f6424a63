@@ -1,0 +1,118 @@
+---
+title: 'Database configuration'
+description: 'Configure PostgreSQL, MySQL, or SQLite for the Cafe Acacias API.'
+keywords: ['database', 'postgresql', 'mysql', 'sqlite', 'connection pool', 'ssl', 'strapi']
+---
+
+The database configuration lives in `config/database.js`. The active engine is controlled by the `DATABASE_CLIENT` environment variable and defaults to `postgres`.
+
+Supported engines:
+
+| Engine | `DATABASE_CLIENT` value | Recommended for |
+|---|---|---|
+| PostgreSQL | `postgres` | Production (default) |
+| MySQL | `mysql` | Production |
+| SQLite | `sqlite` | Local development only |
+
+<Warning>
+  SQLite is not suitable for production. It does not support concurrent writes and has no network access.
+</Warning>
+
+## Switching the database engine
+
+Set `DATABASE_CLIENT` in your `.env` file to the value matching your engine. All other `DATABASE_*` variables are scoped to the selected engine.
+
+## PostgreSQL
+
+PostgreSQL is the default engine and the recommended choice for production deployments.
+
+```bash .env
+DATABASE_CLIENT=postgres
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_NAME=cafeacacias
+DATABASE_USERNAME=strapi
+DATABASE_PASSWORD=your_password
+DATABASE_SCHEMA=public
+```
+
+### Using a connection string
+
+Cloud providers such as Render, Railway, Supabase, and Heroku expose a single `DATABASE_URL` connection string. When this variable is set, the individual host, port, name, username, and password fields are ignored.
+
+```bash .env
+DATABASE_CLIENT=postgres
+DATABASE_URL=postgresql://strapi:your_password@db.example.com:5432/cafeacacias
+```
+
+<Note>
+  `DATABASE_SCHEMA` is not part of the connection string and must always be set separately when using a non-default schema.
+</Note>
+
+## MySQL
+
+```bash .env
+DATABASE_CLIENT=mysql
+DATABASE_HOST=localhost
+DATABASE_PORT=3306
+DATABASE_NAME=cafeacacias
+DATABASE_USERNAME=strapi
+DATABASE_PASSWORD=your_password
+```
+
+<Note>
+  MySQL does not use the `DATABASE_SCHEMA` or `DATABASE_URL` variables.
+</Note>
+
+## SQLite
+
+SQLite requires no server. The database is stored as a single file on disk.
+
+```bash .env
+DATABASE_CLIENT=sqlite
+DATABASE_FILENAME=.tmp/data.db
+```
+
+The path in `DATABASE_FILENAME` is relative to the project root. The file and any parent directories are created automatically on first run.
+
+## SSL configuration
+
+Enable SSL by setting `DATABASE_SSL=true`. This applies to both PostgreSQL and MySQL.
+
+```bash .env
+DATABASE_SSL=true
+```
+
+For environments where the database server uses a self-signed certificate (e.g., some managed cloud databases), you may also need to disable certificate verification. Only do this in non-production environments.
+
+```bash .env
+DATABASE_SSL=true
+DATABASE_SSL_REJECT_UNAUTHORIZED=false
+```
+
+For mutual TLS (client certificate authentication), provide all three of the following:
+
+```bash .env
+DATABASE_SSL=true
+DATABASE_SSL_CA=/path/to/ca.pem
+DATABASE_SSL_CERT=/path/to/client-cert.pem
+DATABASE_SSL_KEY=/path/to/client-key.pem
+```
+
+## Connection pool
+
+Strapi uses [Knex.js](https://knexjs.org/) connection pooling. The pool maintains a set of reusable database connections to reduce connection overhead.
+
+| Variable | Default | Description |
+|---|---|---|
+| `DATABASE_POOL_MIN` | `2` | Minimum connections kept alive |
+| `DATABASE_POOL_MAX` | `10` | Maximum concurrent connections |
+| `DATABASE_CONNECTION_TIMEOUT` | `60000` | Milliseconds to wait before a connection attempt times out |
+
+```bash .env
+DATABASE_POOL_MIN=2
+DATABASE_POOL_MAX=10
+DATABASE_CONNECTION_TIMEOUT=60000
+```
+
+For high-traffic production deployments, increase `DATABASE_POOL_MAX`. Keep it below the maximum connections allowed by your database plan.

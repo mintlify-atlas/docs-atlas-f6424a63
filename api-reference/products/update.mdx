@@ -1,0 +1,149 @@
+---
+title: 'Update a product'
+description: 'Update one or more fields on an existing product.'
+keywords: ['product', 'update', 'put', 'rest']
+api: 'PUT http://localhost:1337/api/products/{id}'
+---
+
+# Update a product
+
+Updates an existing product. Only the fields included in the request body are modified — omitted fields retain their current values.
+
+## Request
+
+**`PUT /api/products/:id`**
+
+### Headers
+
+<ParamField header="Content-Type" type="string" required>
+  Must be `application/json`.
+</ParamField>
+
+<ParamField header="Authorization" type="string" required>
+  `Bearer <jwt_token>`. Must have update permissions on the `product` content type.
+</ParamField>
+
+### Path parameters
+
+<ParamField path="id" type="number" required>
+  The numeric ID of the product to update.
+</ParamField>
+
+### Body
+
+Wrap all fields inside a `data` object. Only include the fields you want to change.
+
+<ParamField body="data" type="object" required>
+  Container object for the fields to update.
+  <Expandable title="properties" defaultOpen>
+    <ParamField body="data.title" type="string">
+      Product name.
+    </ParamField>
+    <ParamField body="data.price" type="number">
+      Price in the smallest currency unit (e.g., cents).
+    </ParamField>
+    <ParamField body="data.summary" type="string">
+      Short description of the product.
+    </ParamField>
+    <ParamField body="data.weight" type="number">
+      Product weight in grams.
+    </ParamField>
+    <ParamField body="data.stock" type="number">
+      Available stock quantity.
+    </ParamField>
+    <ParamField body="data.discount" type="number">
+      Discount percentage (0–100).
+    </ParamField>
+    <ParamField body="data.slug" type="string">
+      URL-friendly identifier.
+    </ParamField>
+    <ParamField body="data.video" type="number">
+      ID of an uploaded media file to attach as a video.
+    </ParamField>
+    <ParamField body="data.cover" type="number">
+      ID of an uploaded media file to use as the cover image.
+    </ParamField>
+    <ParamField body="data.wallpaper" type="number">
+      ID of an uploaded media file to use as the wallpaper image.
+    </ParamField>
+    <ParamField body="data.gallery" type="number[]">
+      Array of media file IDs to include in the product gallery.
+    </ParamField>
+    <ParamField body="data.category" type="number">
+      ID of the category to associate with this product.
+    </ParamField>
+    <ParamField body="data.image" type="number">
+      ID of an uploaded media file to use as the primary thumbnail image.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<Note>
+  This endpoint supports **partial updates**. You only need to send the fields you want to change. All other fields remain unchanged.
+</Note>
+
+## Response
+
+<ResponseField name="data" type="object">
+  The updated product object reflecting all current field values.
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Empty object for single-resource responses.
+</ResponseField>
+
+<RequestExample>
+
+```bash curl
+curl --request PUT \
+  --url http://localhost:1337/api/products/7 \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <jwt_token>' \
+  --data '{
+    "data": {
+      "price": 16000,
+      "stock": 45,
+      "discount": 5
+    }
+  }'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "data": {
+    "id": 7,
+    "title": "Single Origin Ethiopia",
+    "price": 16000,
+    "discount": 5,
+    "summary": "Bright and fruity single origin from the Yirgacheffe region.",
+    "slug": "single-origin-ethiopia",
+    "weight": 250,
+    "stock": 45,
+    "video": null,
+    "cover": null,
+    "wallpaper": null,
+    "gallery": [],
+    "image": null,
+    "category": null
+  },
+  "meta": {}
+}
+```
+
+```json 404
+{
+  "data": null,
+  "error": {
+    "status": 404,
+    "name": "NotFoundError",
+    "message": "Not Found",
+    "details": {}
+  }
+}
+```
+
+</ResponseExample>

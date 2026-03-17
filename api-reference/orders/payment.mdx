@@ -1,0 +1,189 @@
+---
+title: 'Create payment order'
+description: 'Calculate order total, persist the order, and generate a Bold payment gateway integrity hash in a single request.'
+api: 'POST http://localhost:1337/api/payment-order'
+---
+
+This is a custom endpoint (not a standard Strapi CRUD route). It performs four operations in a single request:
+
+1. Calculates the order total by applying per-product discounts.
+2. Generates a UUID (`idPayment`) as the unique payment reference.
+3. Persists the order in the database with state `Pedido creado`.
+4. Generates a SHA-256 integrity hash for the **Bold** payment gateway and returns it alongside the Bold public API key.
+
+Your frontend passes `hashIntegraty` and `apiKey` directly to the Bold payment widget to initiate the payment flow.
+
+<Warning>
+  This endpoint requires authentication. Include `Authorization: Bearer <jwt_token>` in every request.
+</Warning>
+
+## Request body
+
+<ParamField body="products" type="object[]" required>
+  Array of product objects to include in the order. The total is calculated from this array.
+
+  <Expandable title="Product object properties">
+    <ParamField body="price" type="number" required>
+      Full unit price of the product before discount.
+    </ParamField>
+
+    <ParamField body="discount" type="number">
+      Percentage discount to apply (0–100). If omitted or `0`, no discount is applied.
+
+      The discounted price is calculated as:
+      ```
+      discountedPrice = price - (price * discount / 100)
+      ```
+    </ParamField>
+
+    <ParamField body="quantity" type="number" required>
+      Number of units of this product.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="user" type="number" required>
+  ID of the authenticated user placing the order.
+</ParamField>
+
+<ParamField body="currency" type="string" required>
+  ISO 4217 currency code. Used in the Bold integrity hash calculation.
+
+  Example: `"COP"`
+</ParamField>
+
+<ParamField body="address" type="object" required>
+  Shipping address for the order. The shape of this object is flexible — pass whatever address fields your storefront collects. Stored as-is in the `addressShiping` field.
+</ParamField>
+
+## Response
+
+<ResponseField name="id" type="number">
+  Numeric ID of the newly created order record.
+</ResponseField>
+
+<ResponseField name="totalPayment" type="number">
+  Calculated order total after applying all discounts, rounded to the nearest integer.
+</ResponseField>
+
+<ResponseField name="idPayment" type="string">
+  UUID generated for this order. Use this as the payment reference ID in the Bold widget.
+</ResponseField>
+
+<ResponseField name="state" type="string">
+  Always `"Pedido creado"` immediately after creation.
+</ResponseField>
+
+<ResponseField name="products" type="object[]">
+  The product array as stored in the database.
+</ResponseField>
+
+<ResponseField name="addressShiping" type="object">
+  The shipping address as stored in the database.
+</ResponseField>
+
+<ResponseField name="user" type="number">
+  ID of the user associated with the order.
+</ResponseField>
+
+<ResponseField name="hashIntegraty" type="string" required>
+  SHA-256 integrity hash required by the Bold payment gateway. Computed server-side as:
+
+  ```
+  SHA-256( idPayment + totalPayment + currency + BOLD_SECRET_KEY )
+  ```
+
+  Pass this value to the Bold payment widget's `integrity` field.
+</ResponseField>
+
+<ResponseField name="apiKey" type="string" required>
+  Bold public API key (from the `API_KEY_BOLD` environment variable). Pass this to the Bold widget's `apiKey` field to initialize the payment UI.
+</ResponseField>
+
+## Using the response with Bold
+
+After a successful call, initialize the Bold payment widget using the values returned:
+
+```javascript bold-widget.js
+const response = await fetch('http://localhost:1337/api/payment-order', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${jwtToken}`,
+  },
+  body: JSON.stringify({ products, user: userId, currency: 'COP', address }),
+});
+
+const order = await response.json();
+
+// Pass Bold-required fields to the payment widget
+boldWidget.init({
+  orderId: order.idPayment,       // UUID payment reference
+  amount: order.totalPayment,     // Rounded total
+  currency: 'COP',
+  integrity: order.hashIntegraty, // SHA-256 hash for verification
+  apiKey: order.apiKey,           // Bold public key
+});
+```
+
+<Note>
+  The `hashIntegraty` field is spelled with a single 't' — this matches the field name in the source code.
+</Note>
+
+<RequestExample>
+
+```bash cURL
+curl -X POST "http://localhost:1337/api/payment-order" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <jwt_token>" \
+  -d '{
+    "products": [
+      {
+        "id": 3,
+        "title": "Café Especial 250g",
+        "price": 25000,
+        "discount": 10,
+        "quantity": 2
+      }
+    ],
+    "user": 42,
+    "currency": "COP",
+    "address": {
+      "street": "Calle 45 # 12-34",
+      "city": "Bogotá",
+      "zip": "110111"
+    }
+  }'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "id": 8,
+  "totalPayment": 45000,
+  "idPayment": "a3f1c2e4-7d88-4b21-9f3a-0c1234567890",
+  "state": "Pedido creado",
+  "products": [
+    {
+      "id": 3,
+      "title": "Café Especial 250g",
+      "price": 25000,
+      "discount": 10,
+      "quantity": 2
+    }
+  ],
+  "addressShiping": {
+    "street": "Calle 45 # 12-34",
+    "city": "Bogotá",
+    "zip": "110111"
+  },
+  "user": 42,
+  "hashIntegraty": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "apiKey": "bold_pk_test_xxxxxxxxxxxxxxxx"
+}
+```
+
+</ResponseExample>
